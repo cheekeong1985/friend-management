@@ -1,31 +1,31 @@
 package com.test.friendmanagement.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-import javax.validation.constraints.Email;
+import javax.persistence.Column;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
+@Table(name = "RELATIONSHIP")
 public class Relationship {
-    @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Long id;
 
-    @Email
-    @Column(name = "USER_EMAIL", nullable = false)
-    private String userEmail;
+    @EmbeddedId
+    private RelationshipId relationshipId;
 
-    @Email
-    @Column(name = "FRIEND_EMAIL", nullable = false)
-    private String friendEmail;
-
-    @Column(name = "ARE_FRIENDS", nullable = false)
-    private boolean areFriends;
+    @Column(name = "IS_FRIEND", nullable = false)
+    private boolean isFriend;
 
     @Column(name = "IS_BLOCKED", nullable = false)
     private boolean isBlocked;
 
     @Column(name = "IS_SUBSCRIBED", nullable = false)
     private boolean isSubscribed;
+
 }

@@ -1,17 +1,21 @@
 package com.test.friendmanagement.domain;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import javax.validation.constraints.Email;
 
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Entity
-public class User {
+@Table(name = "USERS")
+public class Users {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
     @Email
-    @Column(name = "EMAIL")
+    @Column(name = "EMAIL", nullable = false)
     private String email;
 }
