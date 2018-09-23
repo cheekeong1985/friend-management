@@ -11,7 +11,7 @@ import java.util.List;
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "success", "friends", "count", "recipients"
+        "success", "friends", "count", "recipients", "errorMessage"
 })
 public class FriendResponse {
 
@@ -19,4 +19,5 @@ public class FriendResponse {
     private List<String> friends;
     private Integer count;
     private List<String> recipients;
+    private String errorMessage;
 }

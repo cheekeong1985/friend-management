@@ -34,6 +34,27 @@ public class FriendControllerTest {
     }
 
     @Test
+    public void friendRequest_sameEmails() {
+        ResponseEntity<FriendResponse> responseEntity = makeFriends(Arrays.asList("a@email.com", "a@email.com"));
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        FriendResponse friendResponse = responseEntity.getBody();
+        assertThat(friendResponse).isNotNull()
+                .hasFieldOrPropertyWithValue("success", false)
+                .hasFieldOrPropertyWithValue("errorMessage", "Same email addresses");
+    }
+
+    @Test
+    public void friendRequest_sameFriend() {
+        friendRequest();
+        ResponseEntity<FriendResponse> responseEntity = makeFriends(Arrays.asList("a@email.com", "b@email.com"));
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        FriendResponse friendResponse = responseEntity.getBody();
+        assertThat(friendResponse).isNotNull()
+                .hasFieldOrPropertyWithValue("success", false)
+                .hasFieldOrPropertyWithValue("errorMessage", "Already friend");
+    }
+
+    @Test
     public void getFriendList() {
         makeFriends(Arrays.asList("a@email.com", "b@email.com"));
         makeFriends(Arrays.asList("a@email.com", "c@email.com"));
@@ -48,6 +69,20 @@ public class FriendControllerTest {
                 .hasFieldOrPropertyWithValue("success", true)
                 .hasFieldOrPropertyWithValue("friends", expectedFriends)
                 .hasFieldOrPropertyWithValue("count", 3);
+    }
+
+    @Test
+    public void getFriendList_UserNotFound() {
+        makeFriends(Arrays.asList("a@email.com", "b@email.com"));
+        makeFriends(Arrays.asList("a@email.com", "c@email.com"));
+        FriendListRequest friendListRequest = new FriendListRequest("d@email.com");
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend/list", friendListRequest, FriendResponse.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        FriendResponse friendResponse = responseEntity.getBody();
+        assertThat(friendResponse).isNotNull()
+                .hasFieldOrPropertyWithValue("success", false)
+                .hasFieldOrPropertyWithValue("errorMessage", "User not found");
     }
 
     @Test
@@ -79,6 +114,19 @@ public class FriendControllerTest {
     }
 
     @Test
+    public void subscribeForUpdate_sameSubscribe() {
+        subscribeForUpdate();
+        TargetActionRequest targetActionRequest = new TargetActionRequest("a@email.com", "c@email.com");
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend/subscribe", targetActionRequest, FriendResponse.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        FriendResponse friendResponse = responseEntity.getBody();
+        assertThat(friendResponse).isNotNull()
+                .hasFieldOrPropertyWithValue("success", false)
+                .hasFieldOrPropertyWithValue("errorMessage", "Already subscribed");
+    }
+
+    @Test
     public void blockFromUpdate() {
         makeFriends(Arrays.asList("a@email.com", "b@email.com"));
         makeFriends(Arrays.asList("c@email.com", "d@email.com"));
@@ -86,6 +134,19 @@ public class FriendControllerTest {
         ResponseEntity<FriendResponse> responseEntity =
                 restTemplate.postForEntity("/friend/block", targetActionRequest, FriendResponse.class);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void blockFromUpdate_sameBlock() {
+        blockFromUpdate();
+        TargetActionRequest targetActionRequest = new TargetActionRequest("a@email.com", "c@email.com");
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend/block", targetActionRequest, FriendResponse.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        FriendResponse friendResponse = responseEntity.getBody();
+        assertThat(friendResponse).isNotNull()
+                .hasFieldOrPropertyWithValue("success", false)
+                .hasFieldOrPropertyWithValue("errorMessage", "Already blocked");
     }
 
     @Test
