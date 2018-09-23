@@ -39,4 +39,15 @@ public class RelationshipRepositoryImpl extends QuerydslRepositorySupport implem
                         .gt(1))
                 .fetch();
     }
+
+    @Override
+    public List<String> getUpdatesRecipients(String email) {
+        return jpaQueryFactory.select(relationship.relationshipId.userEmail)
+                .from(relationship)
+                .where(relationship.relationshipId.friendEmail.eq(email)
+                        .and(relationship.isBlocked.isFalse())
+                        .and(relationship.isFriend.isTrue()
+                                .or(relationship.isSubscribed.isTrue())))
+                .fetch();
+    }
 }

@@ -1,13 +1,20 @@
 package com.test.friendmanagement.service;
 
-import com.test.friendmanagement.domain.*;
+import com.test.friendmanagement.domain.Relationship;
+import com.test.friendmanagement.domain.RelationshipId;
+import com.test.friendmanagement.domain.Users;
 import com.test.friendmanagement.exception.RelationshipException;
 import com.test.friendmanagement.exception.UserException;
 import com.test.friendmanagement.repository.RelationshipRepository;
 import com.test.friendmanagement.repository.UserRepository;
+import org.nibor.autolink.LinkExtractor;
+import org.nibor.autolink.LinkSpan;
+import org.nibor.autolink.LinkType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -113,15 +120,25 @@ public class FriendService {
         return true;
     }
 
+    public List<String> getUpdatesRecipients(String senderEmail, String text) {
+        if (!userRepository.exists(users.email.eq(senderEmail))) {
+            throw new UserException("User not found");
+        }
+        List<String> mentionedEmails = extractEmailFromText(text);
+        List<String> recipients = relationshipRepository.getUpdatesRecipients(senderEmail);
+        recipients.addAll(mentionedEmails);
+
+        return recipients;
+    }
+
     private Relationship createRelationship(String userEmail, String friendEmail) {
         // Users story 5 - cannot create new relationship if user is blocked by friend
         if (isBlocked(friendEmail, userEmail)) {
             throw new RelationshipException("Blocked by friend - cannot create relationship");
         }
-        QRelationship qRelationship = QRelationship.relationship;
         RelationshipId relationshipId = new RelationshipId(userEmail, friendEmail);
         Optional<Relationship> relationshipResult = relationshipRepository.findOne(
-                qRelationship.relationshipId.eq(relationshipId));
+                relationship.relationshipId.eq(relationshipId));
         Relationship relationship;
         if (relationshipResult.isPresent()) { // possibly subscribed to update but not friends yet
             relationship = relationshipResult.get();
@@ -136,10 +153,22 @@ public class FriendService {
     }
 
     private boolean isBlocked(String source, String target) {
-        QRelationship qRelationship = QRelationship.relationship;
         RelationshipId relationshipId = new RelationshipId(source, target);
-        Optional<Relationship> relationship = relationshipRepository.findOne(
-                qRelationship.relationshipId.eq(relationshipId));
-        return relationship.map(Relationship::isBlocked).orElse(false);
+        Optional<Relationship> relationshipResult = relationshipRepository.findOne(
+                relationship.relationshipId.eq(relationshipId));
+        return relationshipResult.map(Relationship::isBlocked).orElse(false);
+    }
+
+    private List<String> extractEmailFromText(String input) {
+        LinkExtractor linkExtractor = LinkExtractor.builder()
+                .linkTypes(EnumSet.of(LinkType.EMAIL))
+                .build();
+        List<String> emails = new ArrayList<>();
+        Iterable<LinkSpan> emailLinkSpans = linkExtractor.extractLinks(input);
+        for (LinkSpan emailLinkSpan : emailLinkSpans) {
+            String emailLink = input.substring(emailLinkSpan.getBeginIndex(), emailLinkSpan.getEndIndex());
+            emails.add(emailLink);
+        }
+        return emails;
     }
 }

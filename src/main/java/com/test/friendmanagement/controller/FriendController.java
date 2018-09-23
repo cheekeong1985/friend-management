@@ -1,9 +1,6 @@
 package com.test.friendmanagement.controller;
 
-import com.test.friendmanagement.dto.FriendListRequest;
-import com.test.friendmanagement.dto.FriendRequest;
-import com.test.friendmanagement.dto.FriendResponse;
-import com.test.friendmanagement.dto.TargetActionRequest;
+import com.test.friendmanagement.dto.*;
 import com.test.friendmanagement.service.FriendService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,4 +50,11 @@ public class FriendController {
         boolean status = friendService.blockFromUpdates(targetActionRequest.getRequestor(), targetActionRequest.getTarget());
         return FriendResponse.builder().success(status).build();
     }
+
+    @RequestMapping("/updates")
+    public FriendResponse updates(@RequestBody @Valid SenderUpdateRequest senderUpdateRequest) {
+        List<String> recipients = friendService.getUpdatesRecipients(senderUpdateRequest.getSender(), senderUpdateRequest.getText());
+        return FriendResponse.builder().success(true).recipients(recipients).build();
+    }
+
 }

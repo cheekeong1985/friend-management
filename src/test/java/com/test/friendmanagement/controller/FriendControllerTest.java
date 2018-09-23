@@ -1,9 +1,6 @@
 package com.test.friendmanagement.controller;
 
-import com.test.friendmanagement.dto.FriendListRequest;
-import com.test.friendmanagement.dto.FriendRequest;
-import com.test.friendmanagement.dto.FriendResponse;
-import com.test.friendmanagement.dto.TargetActionRequest;
+import com.test.friendmanagement.dto.*;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,6 +86,40 @@ public class FriendControllerTest {
         ResponseEntity<FriendResponse> responseEntity =
                 restTemplate.postForEntity("/friend/block", targetActionRequest, FriendResponse.class);
         assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void senderUpdate_isFriend_isSubscribed() {
+        makeFriends(Arrays.asList("a@email.com", "b@email.com"));
+        makeFriends(Arrays.asList("c@email.com", "d@email.com"));
+        TargetActionRequest targetActionRequest = new TargetActionRequest("c@email.com", "a@email.com");
+        restTemplate.postForEntity("/friend/subscribe", targetActionRequest, FriendResponse.class);
+
+        SenderUpdateRequest senderUpdateRequest = new SenderUpdateRequest("a@email.com", "Hello World! e@email.com");
+        List<String> expectedRecipients = Arrays.asList("b@email.com", "c@email.com", "e@email.com");
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend/updates", senderUpdateRequest, FriendResponse.class);
+        FriendResponse friendResponse = responseEntity.getBody();
+        assertThat(friendResponse).isNotNull()
+                .hasFieldOrPropertyWithValue("success", true)
+                .hasFieldOrPropertyWithValue("recipients", expectedRecipients);
+    }
+
+    @Test
+    public void senderUpdate_isFriend_isBlocked() {
+        makeFriends(Arrays.asList("a@email.com", "b@email.com"));
+        makeFriends(Arrays.asList("c@email.com", "d@email.com"));
+        TargetActionRequest targetActionRequest = new TargetActionRequest("b@email.com", "a@email.com");
+        restTemplate.postForEntity("/friend/block", targetActionRequest, FriendResponse.class);
+
+        SenderUpdateRequest senderUpdateRequest = new SenderUpdateRequest("a@email.com", "Hello World! e@email.com");
+        List<String> expectedRecipients = Arrays.asList("e@email.com");
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend/updates", senderUpdateRequest, FriendResponse.class);
+        FriendResponse friendResponse = responseEntity.getBody();
+        assertThat(friendResponse).isNotNull()
+                .hasFieldOrPropertyWithValue("success", true)
+                .hasFieldOrPropertyWithValue("recipients", expectedRecipients);
     }
 
 

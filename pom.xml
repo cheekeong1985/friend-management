@@ -25,6 +25,7 @@
         <querydsl.version>4.2.1</querydsl.version>
         <slf4j.version>1.6.1</slf4j.version>
         <assert.core.version>3.11.1</assert.core.version>
+        <auto.link.version>0.9.0</auto.link.version>
     </properties>
 
     <dependencies>
@@ -86,6 +87,11 @@
             <artifactId>assertj-core</artifactId>
             <version>${assert.core.version}</version>
             <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.nibor.autolink</groupId>
+            <artifactId>autolink</artifactId>
+            <version>${auto.link.version}</version>
         </dependency>
     </dependencies>
 
