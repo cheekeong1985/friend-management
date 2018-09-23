@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.test.friendmanagement.domain.QRelationship.relationship;
 import static com.test.friendmanagement.domain.QUsers.users;
 
 @Service
@@ -60,6 +61,56 @@ public class FriendService {
             throw new UserException("User not found");
         });
         return relationshipRepository.getCommonFriendList(emails);
+    }
+
+    public boolean subscribeToUpdates(String requestorEmail, String targetEmail) {
+        if (requestorEmail.equals(targetEmail)) {
+            throw new UserException("Same email addresses");
+        }
+        if (!userRepository.exists(users.email.eq(requestorEmail))
+                || !userRepository.exists(users.email.eq(targetEmail))) {
+            throw new UserException("User not found");
+        }
+        RelationshipId relationshipId = new RelationshipId(requestorEmail, targetEmail);
+        Optional<Relationship> relationshipResult = relationshipRepository.findOne(
+                relationship.relationshipId.eq(relationshipId));
+        Relationship relationship;
+        if (relationshipResult.isPresent()) {
+            relationship = relationshipResult.get();
+            if (relationship.isSubscribed()) {
+                throw new RelationshipException("Already subscribed");
+            }
+            relationship.setSubscribed(true);
+        } else {
+            relationship = new Relationship(relationshipId, false, false, true);
+        }
+        relationshipRepository.save(relationship);
+        return true;
+    }
+
+    public boolean blockFromUpdates(String requestorEmail, String targetEmail) {
+        if (requestorEmail.equals(targetEmail)) {
+            throw new UserException("Same email addresses");
+        }
+        if (!userRepository.exists(users.email.eq(requestorEmail))
+                || !userRepository.exists(users.email.eq(targetEmail))) {
+            throw new UserException("User not found");
+        }
+        RelationshipId relationshipId = new RelationshipId(requestorEmail, targetEmail);
+        Optional<Relationship> relationshipResult = relationshipRepository.findOne(
+                relationship.relationshipId.eq(relationshipId));
+        Relationship relationship;
+        if (relationshipResult.isPresent()) {
+            relationship = relationshipResult.get();
+            if (relationship.isBlocked()) {
+                throw new RelationshipException("Already blocked");
+            }
+            relationship.setBlocked(true);
+        } else {
+            relationship = new Relationship(relationshipId, false, true, false);
+        }
+        relationshipRepository.save(relationship);
+        return true;
     }
 
     private Relationship createRelationship(String userEmail, String friendEmail) {

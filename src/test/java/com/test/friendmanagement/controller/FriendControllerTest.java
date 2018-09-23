@@ -3,6 +3,7 @@ package com.test.friendmanagement.controller;
 import com.test.friendmanagement.dto.FriendListRequest;
 import com.test.friendmanagement.dto.FriendRequest;
 import com.test.friendmanagement.dto.FriendResponse;
+import com.test.friendmanagement.dto.TargetActionRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -70,10 +71,29 @@ public class FriendControllerTest {
                 .hasFieldOrPropertyWithValue("count", 2);
     }
 
+    @Test
+    public void subscribeForUpdate() {
+        makeFriends(Arrays.asList("a@email.com", "b@email.com"));
+        makeFriends(Arrays.asList("c@email.com", "d@email.com"));
+        TargetActionRequest targetActionRequest = new TargetActionRequest("a@email.com", "c@email.com");
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend/subscribe", targetActionRequest, FriendResponse.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    @Test
+    public void blockFromUpdate() {
+        makeFriends(Arrays.asList("a@email.com", "b@email.com"));
+        makeFriends(Arrays.asList("c@email.com", "d@email.com"));
+        TargetActionRequest targetActionRequest = new TargetActionRequest("a@email.com", "c@email.com");
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend/block", targetActionRequest, FriendResponse.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+
     private ResponseEntity<FriendResponse> makeFriends(List<String> emails) {
         FriendRequest friendRequest = new FriendRequest(emails);
-        ResponseEntity<FriendResponse> responseEntity =
-                restTemplate.postForEntity("/friend", friendRequest, FriendResponse.class);
-        return responseEntity;
+        return restTemplate.postForEntity("/friend", friendRequest, FriendResponse.class);
     }
 }

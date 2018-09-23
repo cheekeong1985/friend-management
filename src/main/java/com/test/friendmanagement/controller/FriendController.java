@@ -3,6 +3,7 @@ package com.test.friendmanagement.controller;
 import com.test.friendmanagement.dto.FriendListRequest;
 import com.test.friendmanagement.dto.FriendRequest;
 import com.test.friendmanagement.dto.FriendResponse;
+import com.test.friendmanagement.dto.TargetActionRequest;
 import com.test.friendmanagement.service.FriendService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -39,5 +40,17 @@ public class FriendController {
     public FriendResponse commonFriendList(@RequestBody @Valid FriendRequest friendRequest) {
         List<String> friends = friendService.getCommonFriends(friendRequest.getFriends());
         return FriendResponse.builder().success(true).friends(friends).count(friends.size()).build();
+    }
+
+    @RequestMapping("/subscribe")
+    public FriendResponse subscribe(@RequestBody @Valid TargetActionRequest targetActionRequest) {
+        boolean status = friendService.subscribeToUpdates(targetActionRequest.getRequestor(), targetActionRequest.getTarget());
+        return FriendResponse.builder().success(status).build();
+    }
+
+    @RequestMapping("/block")
+    public FriendResponse block(@RequestBody @Valid TargetActionRequest targetActionRequest) {
+        boolean status = friendService.blockFromUpdates(targetActionRequest.getRequestor(), targetActionRequest.getTarget());
+        return FriendResponse.builder().success(status).build();
     }
 }
