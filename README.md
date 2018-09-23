@@ -59,3 +59,15 @@ consistent way of validation and the validation rules can be read easily.
 Query DSL is chosen because it provides type safety and builder like query mechanism. It 
 provides a consistent way to query over SQL when working in a team.
 
+### Running the Project
+To run the project, you need to download Docker (https://store.docker.com/search?type=edition&offering=community)
+* Checkout the project
+* Open the shell terminal
+* Navigate to the project folder (where the Dockerfile resides) and run the following command:
+````
+docker build -t friend-management-demo .
+````
+* To start the application, run the following command
+````
+docker run -p 8080:8080 friend-management-demo
+````
