@@ -51,6 +51,17 @@ public class FriendService {
         return relationshipRepository.getFriendList(email);
     }
 
+    public List<String> getCommonFriends(List<String> emails) {
+        if (emails.get(0).equals(emails.get(1))) {
+            throw new UserException("Same email addresses");
+        }
+        emails.stream().filter(email -> !userRepository.exists(users.email.eq(email)))
+                .findAny().ifPresent(s -> {
+            throw new UserException("User not found");
+        });
+        return relationshipRepository.getCommonFriendList(emails);
+    }
+
     private Relationship createRelationship(String userEmail, String friendEmail) {
         // Users story 5 - cannot create new relationship if user is blocked by friend
         if (isBlocked(friendEmail, userEmail)) {

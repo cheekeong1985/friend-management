@@ -25,4 +25,18 @@ public class RelationshipRepositoryImpl extends QuerydslRepositorySupport implem
                 .where(relationship.relationshipId.userEmail.eq(email)
                         .and(relationship.isFriend.isTrue())).fetch();
     }
+
+    @Override
+    public List<String> getCommonFriendList(List<String> emails) {
+        return jpaQueryFactory.select(relationship.relationshipId.friendEmail)
+                .from(relationship)
+                .where(relationship.relationshipId.userEmail
+                        .in(emails)
+                        .and(relationship.isFriend.isTrue()))
+                .groupBy(relationship.relationshipId.friendEmail)
+                .having(relationship.relationshipId.friendEmail
+                        .count()
+                        .gt(1))
+                .fetch();
+    }
 }

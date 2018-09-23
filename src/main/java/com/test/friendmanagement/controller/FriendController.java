@@ -34,4 +34,10 @@ public class FriendController {
         List<String> friends = friendService.getFriends(friendListRequest.getEmail());
         return FriendResponse.builder().success(true).friends(friends).count(friends.size()).build();
     }
+
+    @RequestMapping("/list/common")
+    public FriendResponse commonFriendList(@RequestBody @Valid FriendRequest friendRequest) {
+        List<String> friends = friendService.getCommonFriends(friendRequest.getFriends());
+        return FriendResponse.builder().success(true).friends(friends).count(friends.size()).build();
+    }
 }

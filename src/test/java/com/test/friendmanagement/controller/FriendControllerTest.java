@@ -52,6 +52,24 @@ public class FriendControllerTest {
                 .hasFieldOrPropertyWithValue("count", 3);
     }
 
+    @Test
+    public void getCommonFriendList() {
+        makeFriends(Arrays.asList("a@email.com", "b@email.com"));
+        makeFriends(Arrays.asList("a@email.com", "c@email.com"));
+        makeFriends(Arrays.asList("d@email.com", "b@email.com"));
+        makeFriends(Arrays.asList("d@email.com", "c@email.com"));
+        List<String> expectedCommonFriends = Arrays.asList("b@email.com", "c@email.com");
+        FriendRequest friendRequest = new FriendRequest(Arrays.asList("a@email.com", "d@email.com"));
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend/list/common", friendRequest, FriendResponse.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        FriendResponse friendResponse = responseEntity.getBody();
+        assertThat(friendResponse).isNotNull()
+                .hasFieldOrPropertyWithValue("success", true)
+                .hasFieldOrPropertyWithValue("friends", expectedCommonFriends)
+                .hasFieldOrPropertyWithValue("count", 2);
+    }
+
     private ResponseEntity<FriendResponse> makeFriends(List<String> emails) {
         FriendRequest friendRequest = new FriendRequest(emails);
         ResponseEntity<FriendResponse> responseEntity =
