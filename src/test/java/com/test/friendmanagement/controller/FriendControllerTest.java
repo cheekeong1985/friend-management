@@ -94,8 +94,10 @@ public class FriendControllerTest {
     public void getCommonFriendList() {
         makeFriends(Arrays.asList("a@email.com", "b@email.com"));
         makeFriends(Arrays.asList("a@email.com", "c@email.com"));
+        makeFriends(Arrays.asList("a@email.com", "x@email.com"));
         makeFriends(Arrays.asList("d@email.com", "b@email.com"));
         makeFriends(Arrays.asList("d@email.com", "c@email.com"));
+        makeFriends(Arrays.asList("d@email.com", "z@email.com"));
         List<String> expectedCommonFriends = Arrays.asList("b@email.com", "c@email.com");
         FriendRequest friendRequest = new FriendRequest(Arrays.asList("a@email.com", "d@email.com"));
         ResponseEntity<FriendResponse> responseEntity =
