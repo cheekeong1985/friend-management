@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.DirtiesContext;
@@ -14,6 +15,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -24,6 +26,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FriendControllerTest {
     @Autowired
     private TestRestTemplate restTemplate;
+
+    @Autowired
+    private MessageSource messageSource;
 
     @Test
     public void friendRequest() {
@@ -40,7 +45,7 @@ public class FriendControllerTest {
         FriendResponse friendResponse = responseEntity.getBody();
         assertThat(friendResponse).isNotNull()
                 .hasFieldOrPropertyWithValue("success", false)
-                .hasFieldOrPropertyWithValue("errorMessage", "Same email addresses");
+                .hasFieldOrPropertyWithValue("errorMessage", messageSource.getMessage("same.email.addresses", null, Locale.getDefault()));
     }
 
     @Test
@@ -51,7 +56,7 @@ public class FriendControllerTest {
         FriendResponse friendResponse = responseEntity.getBody();
         assertThat(friendResponse).isNotNull()
                 .hasFieldOrPropertyWithValue("success", false)
-                .hasFieldOrPropertyWithValue("errorMessage", "Already friend");
+                .hasFieldOrPropertyWithValue("errorMessage", messageSource.getMessage("already.friend", null, Locale.getDefault()));
     }
 
     @Test
@@ -82,7 +87,7 @@ public class FriendControllerTest {
         FriendResponse friendResponse = responseEntity.getBody();
         assertThat(friendResponse).isNotNull()
                 .hasFieldOrPropertyWithValue("success", false)
-                .hasFieldOrPropertyWithValue("errorMessage", "User not found");
+                .hasFieldOrPropertyWithValue("errorMessage", messageSource.getMessage("user.not.found", null, Locale.getDefault()));
     }
 
     @Test
@@ -123,7 +128,7 @@ public class FriendControllerTest {
         FriendResponse friendResponse = responseEntity.getBody();
         assertThat(friendResponse).isNotNull()
                 .hasFieldOrPropertyWithValue("success", false)
-                .hasFieldOrPropertyWithValue("errorMessage", "Already subscribed");
+                .hasFieldOrPropertyWithValue("errorMessage", messageSource.getMessage("already.subscribed", null, Locale.getDefault()));
     }
 
     @Test
@@ -146,7 +151,7 @@ public class FriendControllerTest {
         FriendResponse friendResponse = responseEntity.getBody();
         assertThat(friendResponse).isNotNull()
                 .hasFieldOrPropertyWithValue("success", false)
-                .hasFieldOrPropertyWithValue("errorMessage", "Already blocked");
+                .hasFieldOrPropertyWithValue("errorMessage", messageSource.getMessage("already.blocked", null, Locale.getDefault()));
     }
 
     @Test
