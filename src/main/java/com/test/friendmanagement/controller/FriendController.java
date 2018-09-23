@@ -23,7 +23,7 @@ public class FriendController {
 
     @RequestMapping
     public FriendResponse friend(@RequestBody @Valid FriendRequest friendRequest) {
-        boolean status = friendService.friend(friendRequest.getFriends());
+        boolean status = friendService.makeFriend(friendRequest.getFriends());
         return FriendResponse.builder().success(status).build();
     }
 

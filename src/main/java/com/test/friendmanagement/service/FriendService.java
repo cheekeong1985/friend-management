@@ -25,6 +25,11 @@ import static com.test.friendmanagement.domain.QUsers.users;
 @Service
 public class FriendService {
 
+    private static final String SAME_EMAIL_ADDRESSES = "Same email addresses";
+    private static final String USER_NOT_FOUND       = "User not found";
+    private static final String ALREADY_SUBSCRIBED   = "Already subscribed";
+    private static final String ALREADY_BLOCKED      = "Already blocked";
+    private static final String ALREADY_FRIEND       = "Already friend";
     private UserRepository userRepository;
     private RelationshipRepository relationshipRepository;
 
@@ -35,9 +40,9 @@ public class FriendService {
         this.relationshipRepository = relationshipRepository;
     }
 
-    public boolean friend(List<String> emails) {
+    public boolean makeFriend(List<String> emails) {
         if (emails.get(0).equals(emails.get(1))) {
-            throw new UserException("Same email addresses");
+            throw new UserException(SAME_EMAIL_ADDRESSES);
         }
         List<Users> newUsers = emails.stream().filter(email ->
                 !userRepository.exists(users.email.eq(email))).map(Users::new).collect(Collectors.toList());
@@ -53,7 +58,7 @@ public class FriendService {
 
     public List<String> getFriends(String email) {
         if (!userRepository.exists(users.email.eq(email))) {
-            throw new UserException("User not found");
+            throw new UserException(USER_NOT_FOUND);
         }
 
         return relationshipRepository.getFriendList(email);
@@ -61,22 +66,22 @@ public class FriendService {
 
     public List<String> getCommonFriends(List<String> emails) {
         if (emails.get(0).equals(emails.get(1))) {
-            throw new UserException("Same email addresses");
+            throw new UserException(SAME_EMAIL_ADDRESSES);
         }
         emails.stream().filter(email -> !userRepository.exists(users.email.eq(email)))
                 .findAny().ifPresent(s -> {
-            throw new UserException("User not found");
+            throw new UserException(USER_NOT_FOUND);
         });
         return relationshipRepository.getCommonFriendList(emails);
     }
 
     public boolean subscribeToUpdates(String requestorEmail, String targetEmail) {
         if (requestorEmail.equals(targetEmail)) {
-            throw new UserException("Same email addresses");
+            throw new UserException(SAME_EMAIL_ADDRESSES);
         }
         if (!userRepository.exists(users.email.eq(requestorEmail))
                 || !userRepository.exists(users.email.eq(targetEmail))) {
-            throw new UserException("User not found");
+            throw new UserException(USER_NOT_FOUND);
         }
         RelationshipId relationshipId = new RelationshipId(requestorEmail, targetEmail);
         Optional<Relationship> relationshipResult = relationshipRepository.findOne(
@@ -85,7 +90,7 @@ public class FriendService {
         if (relationshipResult.isPresent()) {
             relationship = relationshipResult.get();
             if (relationship.isSubscribed()) {
-                throw new RelationshipException("Already subscribed");
+                throw new RelationshipException(ALREADY_SUBSCRIBED);
             }
             relationship.setSubscribed(true);
         } else {
@@ -97,11 +102,11 @@ public class FriendService {
 
     public boolean blockFromUpdates(String requestorEmail, String targetEmail) {
         if (requestorEmail.equals(targetEmail)) {
-            throw new UserException("Same email addresses");
+            throw new UserException(SAME_EMAIL_ADDRESSES);
         }
         if (!userRepository.exists(users.email.eq(requestorEmail))
                 || !userRepository.exists(users.email.eq(targetEmail))) {
-            throw new UserException("User not found");
+            throw new UserException(USER_NOT_FOUND);
         }
         RelationshipId relationshipId = new RelationshipId(requestorEmail, targetEmail);
         Optional<Relationship> relationshipResult = relationshipRepository.findOne(
@@ -110,7 +115,7 @@ public class FriendService {
         if (relationshipResult.isPresent()) {
             relationship = relationshipResult.get();
             if (relationship.isBlocked()) {
-                throw new RelationshipException("Already blocked");
+                throw new RelationshipException(ALREADY_BLOCKED);
             }
             relationship.setBlocked(true);
         } else {
@@ -122,7 +127,7 @@ public class FriendService {
 
     public List<String> getUpdatesRecipients(String senderEmail, String text) {
         if (!userRepository.exists(users.email.eq(senderEmail))) {
-            throw new UserException("User not found");
+            throw new UserException(USER_NOT_FOUND);
         }
         List<String> mentionedEmails = extractEmailFromText(text);
         List<String> recipients = relationshipRepository.getUpdatesRecipients(senderEmail);
@@ -134,7 +139,7 @@ public class FriendService {
     private Relationship createRelationship(String userEmail, String friendEmail) {
         // Users story 5 - cannot create new relationship if user is blocked by friend
         if (isBlocked(friendEmail, userEmail)) {
-            throw new RelationshipException("Blocked by friend - cannot create relationship");
+            throw new RelationshipException(ALREADY_BLOCKED);
         }
         RelationshipId relationshipId = new RelationshipId(userEmail, friendEmail);
         Optional<Relationship> relationshipResult = relationshipRepository.findOne(
@@ -143,7 +148,7 @@ public class FriendService {
         if (relationshipResult.isPresent()) { // possibly subscribed to update but not friends yet
             relationship = relationshipResult.get();
             if (relationship.isFriend()) {
-                throw new RelationshipException("Already friends. Nothing to update.");
+                throw new RelationshipException(ALREADY_FRIEND);
             }
             relationship.setFriend(true);
         } else {
