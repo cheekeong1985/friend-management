@@ -2,6 +2,7 @@ package com.test.friendmanagement.service;
 
 import com.test.friendmanagement.domain.*;
 import com.test.friendmanagement.exception.RelationshipException;
+import com.test.friendmanagement.exception.UserException;
 import com.test.friendmanagement.repository.RelationshipRepository;
 import com.test.friendmanagement.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static com.test.friendmanagement.domain.QUsers.users;
 
 @Service
 public class FriendService {
@@ -26,10 +29,10 @@ public class FriendService {
 
     public boolean friend(List<String> emails) {
         if (emails.get(0).equals(emails.get(1))) {
-            throw new RelationshipException("Same email addresses");
+            throw new UserException("Same email addresses");
         }
         List<Users> newUsers = emails.stream().filter(email ->
-                !userRepository.exists(QUsers.users.email.eq(email))).map(Users::new).collect(Collectors.toList());
+                !userRepository.exists(users.email.eq(email))).map(Users::new).collect(Collectors.toList());
         userRepository.saveAll(newUsers);
 
         Relationship relationship1 = createRelationship(emails.get(0), emails.get(1));
@@ -38,6 +41,14 @@ public class FriendService {
         relationshipRepository.save(relationship1);
         relationshipRepository.save(relationship2);
         return true;
+    }
+
+    public List<String> getFriends(String email) {
+        if (!userRepository.exists(users.email.eq(email))) {
+            throw new UserException("User not found");
+        }
+
+        return relationshipRepository.getFriendList(email);
     }
 
     private Relationship createRelationship(String userEmail, String friendEmail) {

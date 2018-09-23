@@ -1,5 +1,6 @@
 package com.test.friendmanagement.controller;
 
+import com.test.friendmanagement.dto.FriendListRequest;
 import com.test.friendmanagement.dto.FriendRequest;
 import com.test.friendmanagement.dto.FriendResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -26,17 +28,34 @@ public class FriendControllerTest {
     private TestRestTemplate restTemplate;
 
     @Test
-    public void friendRequest_success() {
-        FriendRequest friendRequest = new FriendRequest(Arrays.asList("a@mail.com", "b@mail.com"));
-        ResponseEntity<FriendResponse> responseResponseEntity =
-                restTemplate.postForEntity("/friend", friendRequest, FriendResponse.class);
-        assertThat(responseResponseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
-        FriendResponse friendResponse = responseResponseEntity.getBody();
+    public void friendRequest() {
+        ResponseEntity<FriendResponse> responseEntity = makeFriends(Arrays.asList("a@email.com", "b@email.com"));
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        FriendResponse friendResponse = responseEntity.getBody();
         assertThat(friendResponse).isNotNull().hasFieldOrPropertyWithValue("success", true);
     }
 
     @Test
-    public void friendRequest_error_sameEmails() {
-        FriendRequest friendRequest = new FriendRequest(Arrays.asList("b@mail.com", "b@mail.com"));
+    public void getFriendList() {
+        makeFriends(Arrays.asList("a@email.com", "b@email.com"));
+        makeFriends(Arrays.asList("a@email.com", "c@email.com"));
+        makeFriends(Arrays.asList("a@email.com", "d@email.com"));
+        List<String> expectedFriends = Arrays.asList("b@email.com", "c@email.com", "d@email.com");
+        FriendListRequest friendListRequest = new FriendListRequest("a@email.com");
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend/list", friendListRequest, FriendResponse.class);
+        assertThat(responseEntity.getStatusCode()).isEqualTo(HttpStatus.OK);
+        FriendResponse friendResponse = responseEntity.getBody();
+        assertThat(friendResponse).isNotNull()
+                .hasFieldOrPropertyWithValue("success", true)
+                .hasFieldOrPropertyWithValue("friends", expectedFriends)
+                .hasFieldOrPropertyWithValue("count", 3);
+    }
+
+    private ResponseEntity<FriendResponse> makeFriends(List<String> emails) {
+        FriendRequest friendRequest = new FriendRequest(emails);
+        ResponseEntity<FriendResponse> responseEntity =
+                restTemplate.postForEntity("/friend", friendRequest, FriendResponse.class);
+        return responseEntity;
     }
 }

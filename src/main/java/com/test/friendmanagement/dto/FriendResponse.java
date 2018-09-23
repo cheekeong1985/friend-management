@@ -5,13 +5,17 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 @Builder
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonPropertyOrder({
-    "success"
+    "success", "friends", "count"
 })
 public class FriendResponse {
 
     private Boolean success;
+    private List<String> friends;
+    private Integer count;
 }
